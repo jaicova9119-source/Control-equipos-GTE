@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Control Equipos GTE</title>
+<title>Control de Activos · GTE</title>
 <link rel="manifest" id="manifest-link">
 <meta name="theme-color" content="#134B70">
 <style>
@@ -41,24 +41,31 @@ input,select,textarea{font-family:inherit;font-size:15px;}
 
 /* ---------- Pantalla de acceso ---------- */
 #auth-gate{
-  position:fixed;inset:0;background:var(--bg-2);display:flex;align-items:center;justify-content:center;
-  z-index:100;padding:20px;
+  position:fixed;inset:0;background:linear-gradient(160deg,var(--jac-blue),var(--accent));display:flex;flex-direction:column;
+  align-items:center;justify-content:center;z-index:100;padding:20px;gap:18px;
 }
 #espera-aprobacion{
-  position:fixed;inset:0;background:var(--bg-2);display:none;align-items:center;justify-content:center;
+  position:fixed;inset:0;background:linear-gradient(160deg,var(--jac-blue),var(--accent));display:none;align-items:center;justify-content:center;
   z-index:100;padding:20px;
 }
 .auth-card{
   width:100%;max-width:380px;background:var(--bg-0);border-radius:16px;border:1px solid var(--line);
-  padding:32px 24px;box-shadow:0 8px 40px rgba(19,75,112,.14);
+  padding:28px 24px;box-shadow:0 12px 40px rgba(0,0,0,.25);
 }
+.auth-footer{
+  font-size:11.5px;color:rgba(255,255,255,.85);text-align:center;max-width:380px;margin:0;line-height:1.6;
+}
+.auth-footer a{color:#fff;text-decoration:underline;}
+.auth-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
 .auth-logo{
-  width:52px;height:52px;border-radius:12px;background:linear-gradient(135deg,var(--jac-blue),var(--accent));
-  color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;
+  width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--jac-blue),var(--accent));
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
 }
-.auth-card h1{font-size:19px;margin:0 0 4px;color:var(--text-0);}
+.auth-card h1{font-size:19px;margin:0;color:var(--text-0);}
 .auth-sub{font-size:13px;color:var(--text-2);margin:0 0 22px;}
 .auth-error{background:var(--danger-bg);color:var(--danger);font-size:12.5px;padding:8px 12px;border-radius:8px;margin-bottom:12px;}
+.auth-offline-link{font-size:12px;color:var(--text-2);text-align:center;margin:14px 0 0;}
+.auth-offline-link a{color:var(--accent);text-decoration:underline;}
 
 .usuario-row{
   display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line-soft);
@@ -315,27 +322,40 @@ input,select,textarea{font-family:inherit;font-size:15px;}
 <!-- ===== Pantalla de acceso (login / registro) ===== -->
 <div id="auth-gate">
   <div class="auth-card">
-    <div class="auth-logo">JAC</div>
-    <h1>Control Equipos GTE</h1>
-    <p class="auth-sub">Inicia sesión con tu cuenta de JAC Engineering</p>
+    <div class="auth-header">
+      <div class="auth-logo">
+        <svg viewBox="0 0 48 48" width="24" height="24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M24 6 38 12v10c0 10-6 17-14 20-8-3-14-10-14-20V12z"/>
+          <path d="M17 24l5.5 5.5L32 19"/>
+        </svg>
+      </div>
+      <h1>Control de Activos</h1>
+    </div>
+    <p class="auth-sub">Gran Tierra Energy · Inventario, movimientos y conciliación con SAP</p>
 
     <div id="auth-form-login">
-      <div class="field"><label>Correo</label><input id="auth-email" type="email" placeholder="nombre@jacengineering.com"/></div>
+      <div class="field"><label>Correo</label><input id="auth-email" type="email"/></div>
       <div class="field"><label>Contraseña</label><input id="auth-password" type="password" placeholder="••••••••"/></div>
       <div id="auth-error" class="auth-error" style="display:none"></div>
-      <button class="btn-primary" id="btn-login">Iniciar sesión</button>
+      <button class="btn-primary" id="btn-login">&#128274; Iniciar sesión</button>
       <button class="btn-secondary" id="btn-ir-registro">Crear una cuenta nueva</button>
+      <p class="auth-offline-link"><span>Uso sin conexión:</span> <a href="#" id="link-continuar-offline">continuar con tu última sesión guardada</a></p>
     </div>
 
     <div id="auth-form-registro" style="display:none">
       <div class="field"><label>Nombre completo</label><input id="reg-nombre" placeholder="Ej. Jaime Córdoba"/></div>
-      <div class="field"><label>Correo</label><input id="reg-email" type="email" placeholder="nombre@jacengineering.com"/></div>
+      <div class="field"><label>Correo</label><input id="reg-email" type="email"/></div>
       <div class="field"><label>Contraseña</label><input id="reg-password" type="password" placeholder="Mínimo 6 caracteres"/></div>
       <div id="reg-error" class="auth-error" style="display:none"></div>
       <button class="btn-primary" id="btn-registrar">Crear cuenta</button>
       <button class="btn-secondary" id="btn-ir-login">Ya tengo cuenta</button>
     </div>
   </div>
+  <p class="auth-footer">
+    Desarrollado por <a href="https://jacengineering.com.co" target="_blank" rel="noopener">JAC Engineering SAS</a><br>
+    <a href="mailto:proyectos@jacengineering.com.co">proyectos@jacengineering.com.co</a> · <a href="tel:+573112721760">+57 311 272 1760</a><br>
+    Control de Activos v1.0 · Configurado para GTE / SAP
+  </p>
 </div>
 
 <!-- ===== Pantalla de espera de aprobacion ===== -->
@@ -354,7 +374,7 @@ input,select,textarea{font-family:inherit;font-size:15px;}
 
   <div class="topbar">
     <div class="brand">
-      <b>Control Equipos GTE</b>
+      <b>Control de Activos</b>
       <span id="campo-actual">Todos los campos</span>
     </div>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
@@ -605,15 +625,15 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
    quede en un solo archivo HTML)
    ============================================================ */
 const manifest = {
-  name: "Control Equipos GTE",
-  short_name: "Equipos GTE",
+  name: "Control de Activos - GTE",
+  short_name: "Activos GTE",
   start_url: ".",
   display: "standalone",
   background_color: "#ffffff",
   theme_color: "#134B70",
   icons: [{
     src: "data:image/svg+xml," + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23134B70"/><text x="50" y="62" font-size="42" text-anchor="middle" fill="%231B8E9E" font-family="sans-serif" font-weight="bold">JAC</text></svg>'
+      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23134B70"/><path d="M50 16 76 26v20c0 21-13 35-26 40-13-5-26-19-26-40V26z" fill="none" stroke="%23ffffff" stroke-width="5" stroke-linejoin="round"/><path d="M36 51l11 11 21-22" fill="none" stroke="%231B8E9E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
     ),
     sizes: "100x100",
     type: "image/svg+xml"
@@ -1594,21 +1614,42 @@ document.getElementById("btn-revisar-de-nuevo").onclick = async () => {
   if (data.session) await manejarSesionActiva(data.session);
 };
 
+const PERFIL_CACHE_KEY = "equipos_gte_perfil_cache";
+
 async function manejarSesionActiva(session) {
   sesionSupabase = session;
-  let { data: perfil } = await sb.from("usuarios").select("*").eq("auth_user_id", session.user.id).maybeSingle();
-  if (!perfil) {
-    // Cuenta de auth existe pero sin fila en usuarios (caso raro) -> crearla, inactiva
-    const { data: creado } = await sb.from("usuarios").insert({
-      nombre: session.user.email, email: session.user.email, rol: "tecnico", activo: false,
-      auth_user_id: session.user.id,
-    }).select().single();
-    perfil = creado;
+  let perfil = null;
+  try {
+    const resp = await sb.from("usuarios").select("*").eq("auth_user_id", session.user.id).maybeSingle();
+    perfil = resp.data;
+    if (!perfil) {
+      // Cuenta de auth existe pero sin fila en usuarios (caso raro) -> crearla, inactiva
+      const { data: creado } = await sb.from("usuarios").insert({
+        nombre: session.user.email, email: session.user.email, rol: "tecnico", activo: false,
+        auth_user_id: session.user.id,
+      }).select().single();
+      perfil = creado;
+    }
+  } catch (e) {
+    // Sin conexion: usar el perfil que quedo guardado la ultima vez que entramos con señal
+    const cache = localStorage.getItem(PERFIL_CACHE_KEY);
+    if (cache) {
+      perfil = JSON.parse(cache);
+      toast("Sin conexión: entrando con tu última sesión guardada");
+    }
   }
-  usuarioActual = perfil ? {
+
+  if (!perfil) {
+    mostrarErrorAuth("auth-error", "No se pudo verificar tu cuenta. Intenta cuando tengas señal.");
+    mostrarAuthGate();
+    return;
+  }
+
+  usuarioActual = {
     id: perfil.id, auth_user_id: perfil.auth_user_id, nombre: perfil.nombre,
     email: perfil.email, rol: perfil.rol, activo: perfil.activo,
-  } : { id: null, nombre: session.user.email, email: session.user.email, rol: "tecnico", activo: false };
+  };
+  localStorage.setItem(PERFIL_CACHE_KEY, JSON.stringify(perfil));
 
   if (!usuarioActual.activo) {
     document.getElementById("auth-gate").style.display = "none";
@@ -1621,6 +1662,21 @@ async function manejarSesionActiva(session) {
   actualizarBadgePerfil();
   await inicializarApp();
 }
+
+document.getElementById("link-continuar-offline").onclick = async (ev) => {
+  ev.preventDefault();
+  const cache = localStorage.getItem(PERFIL_CACHE_KEY);
+  if (!cache) {
+    mostrarErrorAuth("auth-error", "Todavía no hay ninguna sesión guardada en este dispositivo. Inicia sesión al menos una vez con conexión.");
+    return;
+  }
+  const { data } = await sb.auth.getSession();
+  if (!data.session) {
+    mostrarErrorAuth("auth-error", "No hay una sesión guardada en el navegador. Inicia sesión con conexión al menos una vez.");
+    return;
+  }
+  await manejarSesionActiva(data.session);
+};
 
 function actualizarBadgePerfil() {
   const label = document.getElementById("perfil-actual");
