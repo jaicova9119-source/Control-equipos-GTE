@@ -793,7 +793,6 @@ function renderChipsCampo() {
   todos.onclick = () => { filtroCampo = null; renderChipsCampo(); renderLista(); document.getElementById("campo-actual").textContent = "Todos los campos"; cerrarPanelesFiltro(); };
   cont.appendChild(todos);
   codigosUsados.forEach(codigo => {
-    const nombre = (campos.find(c => c.codigo === codigo) || {}).nombre || codigo;
     const chip = document.createElement("span");
     chip.className = "chip" + (filtroCampo === codigo ? " active" : "");
     chip.textContent = codigo;
@@ -801,7 +800,7 @@ function renderChipsCampo() {
       filtroCampo = codigo;
       renderChipsCampo();
       renderLista();
-      document.getElementById("campo-actual").textContent = nombre + " (" + codigo + ")";
+      document.getElementById("campo-actual").textContent = codigo;
       cerrarPanelesFiltro();
     };
     cont.appendChild(chip);
@@ -842,8 +841,7 @@ function renderChipsCampo() {
 
 function actualizarEtiquetasFiltro() {
   const btnCampo = document.querySelector('.filtro-toggle[data-grupo="campo"]');
-  const nombreCampo = filtroCampo ? ((campos.find(c => c.codigo === filtroCampo) || {}).nombre || filtroCampo) : null;
-  btnCampo.innerHTML = (filtroCampo ? `Campo: ${nombreCampo}` : "Campo") + ' <span class="fchev">&#9662;</span>';
+  btnCampo.innerHTML = (filtroCampo ? `Campo: ${filtroCampo}` : "Campo") + ' <span class="fchev">&#9662;</span>';
   btnCampo.classList.toggle("activo", !!filtroCampo);
 
   const btnEstado = document.querySelector('.filtro-toggle[data-grupo="estado"]');
@@ -954,7 +952,6 @@ function renderArbol(cont) {
 
   cont.innerHTML = "";
   Object.keys(arbol).sort().forEach(campoKey => {
-    const nombreCampo = (campos.find(c => c.codigo === campoKey) || {}).nombre || campoKey;
     const subgrupos = arbol[campoKey];
     const totalCampo = Object.values(subgrupos).reduce((a, arr) => a + arr.length, 0);
     const keyCampo = "campo:" + campoKey;
@@ -965,7 +962,7 @@ function renderArbol(cont) {
       <div class="tree-group-header" data-key="${keyCampo}">
         <span class="tree-chevron">&#9656;</span>
         <span class="tree-folder-icon">&#128193;</span>
-        <span class="tree-group-title">${nombreCampo} (${campoKey})</span>
+        <span class="tree-group-title">${campoKey}</span>
         <span class="tree-group-count">${totalCampo}</span>
       </div>
       <div class="tree-children" id="tc-${CSS.escape(keyCampo)}"></div>
@@ -1093,8 +1090,7 @@ document.getElementById("btn-exportar").onclick = () => {
   filasResumen.push(["EQUIPOS POR CAMPO"]);
   filasResumen.push(["Campo", "Cantidad", "% del total", "Gráfico"]);
   Object.entries(porCampo).sort((a, b) => b[1] - a[1]).forEach(([campo, n]) => {
-    const nombre = (campos.find(c => c.codigo === campo) || {}).nombre || campo;
-    filasResumen.push([`${nombre} (${campo})`, n, (n / total * 100).toFixed(1) + "%", barraTexto(n, maxCampoExp)]);
+    filasResumen.push([campo, n, (n / total * 100).toFixed(1) + "%", barraTexto(n, maxCampoExp)]);
   });
 
   const wsResumen = XLSX.utils.aoa_to_sheet(filasResumen);
@@ -1453,7 +1449,7 @@ document.getElementById("btn-guardar-cambio").onclick = async () => {
    ============================================================ */
 document.getElementById("btn-fab").onclick = () => {
   const sel = document.getElementById("n-campo");
-  sel.innerHTML = campos.map(c => `<option value="${c.codigo}">${c.nombre} (${c.codigo})</option>`).join("");
+  sel.innerHTML = campos.map(c => `<option value="${c.codigo}">${c.codigo}</option>`).join("");
   ["n-desc", "n-marca", "n-modelo", "n-serie", "n-ubicacion"].forEach(id => document.getElementById(id).value = "");
   abrirPanel("panel-nuevo");
 };
@@ -1914,9 +1910,7 @@ function irAInicioFiltrado({ campo = null, estado = null, sinCodigo = false } = 
   filtroCampo = campo;
   filtroEstado = estado;
   filtroSinCodigo = sinCodigo;
-  document.getElementById("campo-actual").textContent = campo
-    ? `${(campos.find(c => c.codigo === campo) || {}).nombre || campo} (${campo})`
-    : "Todos los campos";
+  document.getElementById("campo-actual").textContent = campo || "Todos los campos";
   renderChipsCampo();
   renderLista();
   cerrarPanel("panel-resumen");
@@ -1992,9 +1986,8 @@ function renderResumen() {
   html += '<div class="section-label">Equipos por campo</div>';
   camposOrdenados.forEach(([codigo, n]) => {
     const pct = Math.round((n / maxCampo) * 100);
-    const nombre = (campos.find(c => c.codigo === codigo) || {}).nombre || codigo;
     html += `<button class="bar-row" data-campo="${codigo}">
-      <span class="bar-label" title="${nombre}">${codigo}</span>
+      <span class="bar-label">${codigo}</span>
       <span class="bar-track"><span class="bar-fill" style="width:${pct}%;background:var(--jac-blue)"></span></span>
       <span class="bar-count">${n}</span>
     </button>`;
