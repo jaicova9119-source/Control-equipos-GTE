@@ -6,6 +6,26 @@
 <title>Control de Activos · GTE</title>
 <link rel="manifest" id="manifest-link">
 <meta name="theme-color" content="#134B70">
+
+<!-- Icono en pestaña del navegador -->
+<link rel="icon" type="image/png" sizes="32x32" href="./icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="./icons/favicon-16.png">
+
+<!-- Icono al agregar a inicio en iPhone (Safari no lee el manifest para esto) -->
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+
+<!-- Vista previa al compartir el enlace (WhatsApp, Telegram, redes sociales) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://control-equipos-gte.onrender.com/">
+<meta property="og:title" content="Control de Activos · GTE">
+<meta property="og:description" content="Gran Tierra Energy · Inventario, movimientos y conciliación con SAP">
+<meta property="og:image" content="https://control-equipos-gte.onrender.com/icons/social-preview.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Control de Activos · GTE">
+<meta name="twitter:description" content="Gran Tierra Energy · Inventario, movimientos y conciliación con SAP">
+<meta name="twitter:image" content="https://control-equipos-gte.onrender.com/icons/social-preview.png">
 <style>
 :root{
   --bg-0:#ffffff;
@@ -631,13 +651,11 @@ const manifest = {
   display: "standalone",
   background_color: "#ffffff",
   theme_color: "#134B70",
-  icons: [{
-    src: "data:image/svg+xml," + encodeURIComponent(
-      '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="20" fill="%23134B70"/><path d="M50 16 76 26v20c0 21-13 35-26 40-13-5-26-19-26-40V26z" fill="none" stroke="%23ffffff" stroke-width="5" stroke-linejoin="round"/><path d="M36 51l11 11 21-22" fill="none" stroke="%231B8E9E" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-    ),
-    sizes: "100x100",
-    type: "image/svg+xml"
-  }]
+  icons: [
+    { src: "./icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+    { src: "./icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+    { src: "./icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" }
+  ]
 };
 document.getElementById("manifest-link").href =
   "data:application/manifest+json," + encodeURIComponent(JSON.stringify(manifest));

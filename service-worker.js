@@ -12,11 +12,17 @@
  * cargue sin señal.
  */
 
-const CACHE_NAME = "equipos-gte-v1";
+const CACHE_NAME = "equipos-gte-v2";
 
 const ARCHIVOS_A_GUARDAR = [
   "./",
   "./index.html",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/icon-maskable-512.png",
+  "./icons/apple-touch-icon.png",
+  "./icons/favicon-32.png",
+  "./icons/favicon-16.png",
   "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2",
   "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js",
 ];
