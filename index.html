@@ -72,6 +72,7 @@ html,body{height:100%;margin:0;}
 .navbar .nav-item[data-modulo]{display:none;}
 .navbar.modulo-activos .nav-item[data-modulo="activos"]{display:flex;}
 .navbar.modulo-materiales .nav-item[data-modulo="materiales"]{display:flex;}
+.navbar.modulo-documental .nav-item[data-modulo="documental"]{display:flex;}
 body{
   background:var(--bg-0);color:var(--text-0);font-family:var(--sans);
   font-size:15px;overflow:hidden;padding-top:46px;
@@ -137,7 +138,7 @@ input,select,textarea{font-family:inherit;font-size:15px;}
 .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
 
 .search-row{padding:12px 16px 0;flex-shrink:0;display:flex;gap:8px;}
-.search-box{flex:1;}
+.search-box{flex:1;min-width:0;}
 .view-toggle{
   flex-shrink:0;width:38px;height:38px;border-radius:10px;background:var(--bg-2);
   border:1px solid var(--line);font-size:16px;display:flex;align-items:center;justify-content:center;
@@ -220,6 +221,30 @@ input,select,textarea{font-family:inherit;font-size:15px;}
 .badge-OK{background:var(--ok-bg);color:var(--ok);}
 .badge-SOBRESTOCK{background:var(--accent-bg);color:var(--accent);}
 .badge-SIN{background:var(--bg-3);color:var(--text-2);}
+.badge-DISPONIBLE{background:var(--ok-bg);color:var(--ok);}
+.badge-INSUFICIENTE{background:var(--danger-bg);color:var(--danger);}
+
+/* ---------- Gestion Documental ---------- */
+.doc-card-cat{
+  display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:6px;
+  background:var(--bg-3);color:var(--text-1);margin-bottom:4px;
+}
+.doc-componente-row{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--line-soft);font-size:13px;
+}
+.doc-componente-main{min-width:0;}
+.doc-componente-desc{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.doc-componente-meta{font-size:11.5px;color:var(--text-2);}
+.dropzone{
+  border:2px dashed var(--line);border-radius:10px;padding:24px 16px;text-align:center;
+  color:var(--text-2);font-size:13px;cursor:pointer;margin-bottom:6px;
+}
+.dropzone.arrastrando{border-color:var(--accent);background:var(--accent-bg);}
+.archivo-elegido{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--bg-2);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:6px;
+}
 
 /* ---------- Materiales / Min-Max ---------- */
 .mat-card{
@@ -297,7 +322,7 @@ input,select,textarea{font-family:inherit;font-size:15px;}
 }
 .panel-header h2{font-size:15.5px;font-weight:600;margin:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .icon-btn{background:none;border:none;color:var(--text-0);font-size:20px;padding:4px;display:flex;}
-.panel-body{flex:1;overflow-y:auto;padding:16px;}
+.panel-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px;}
 
 .section-label{font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin:18px 0 8px;}
 .section-label:first-child{margin-top:0;}
@@ -493,6 +518,7 @@ input,select,textarea{font-family:inherit;font-size:15px;}
   <select id="selector-modulo">
     <option value="activos">Gestión de Activos</option>
     <option value="materiales">Gestión de Materiales</option>
+    <option value="documental">Gestión Documental</option>
   </select>
 </div>
 
@@ -566,6 +592,15 @@ input,select,textarea{font-family:inherit;font-size:15px;}
   <button class="nav-item" data-tab="carrito" data-modulo="materiales">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
     Carrito
+  </button>
+
+  <button class="nav-item" data-tab="documentos" data-modulo="documental">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+    Buscar
+  </button>
+  <button class="nav-item" data-tab="documentos-cargar" data-modulo="documental">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+    Cargar
   </button>
 
   <button class="nav-item nav-item-separador" data-tab="perfil">
@@ -788,10 +823,10 @@ input,select,textarea{font-family:inherit;font-size:15px;}
       <div class="search-box"><span class="search-icon">&#128269;</span><input id="mat-buscar" placeholder="Código, descripción, parte..."/></div>
     </div>
     <div class="filtros-bar" style="padding:0 16px 8px">
-      <select id="mat-filtro-centro" style="flex:1;font-size:12.5px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--text-1)">
+      <select id="mat-filtro-centro" style="min-width:0;flex:1;font-size:12.5px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--text-1)">
         <option value="">Todos los centros</option>
       </select>
-      <select id="mat-filtro-categoria" style="flex:1;font-size:12.5px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--text-1)">
+      <select id="mat-filtro-categoria" style="min-width:0;flex:1;font-size:12.5px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--text-1)">
         <option value="">Todas las áreas</option>
       </select>
     </div>
@@ -960,6 +995,94 @@ input,select,textarea{font-family:inherit;font-size:15px;}
   </div>
 </div>
 
+<!-- ===== Panel: Documentos (busqueda) ===== -->
+<div class="panel" id="panel-documentos">
+  <div class="panel-header">
+    <h2>Documentos</h2>
+  </div>
+  <div class="panel-body" style="padding:0">
+    <div class="search-row" style="padding:12px 16px 8px">
+      <div class="search-box"><span class="search-icon">&#128269;</span><input id="doc-buscar" placeholder="Título, palabra clave, tipo de equipo..."/></div>
+    </div>
+    <div class="filtros-bar" style="padding:0 16px 8px">
+      <select id="doc-filtro-categoria" style="min-width:0;flex:1;font-size:12.5px;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--bg-2);color:var(--text-1)">
+        <option value="">Todas las categorías</option>
+        <option value="MANUAL">Manual</option>
+        <option value="INSTRUCTIVO">Instructivo</option>
+        <option value="PROCEDIMIENTO">Procedimiento</option>
+        <option value="CHECKLIST">Check List</option>
+        <option value="OTRO">Otro</option>
+      </select>
+    </div>
+    <div class="list" style="padding-top:4px" id="lista-documentos">
+      <div class="loading">Cargando documentos...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Panel: Ficha de documento ===== -->
+<div class="panel" id="panel-documento-ficha">
+  <div class="panel-header">
+    <button class="icon-btn" onclick="volverADocumentos()">&#8592;</button>
+    <h2 id="doc-ficha-titulo">Documento</h2>
+  </div>
+  <div class="panel-body">
+    <table class="kv-table" id="doc-ficha-tabla"></table>
+
+    <div style="display:flex;gap:8px;margin:16px 0">
+      <button class="btn-primary" id="doc-btn-descargar" style="flex:1">&#128190; Descargar / Ver</button>
+      <button class="btn-secondary" id="doc-btn-eliminar" style="display:none">&#128465;</button>
+    </div>
+
+    <div id="doc-componentes-seccion" style="display:none">
+      <div class="section-label">Componentes / repuestos relacionados</div>
+      <div class="hint-box">&#128295; Cruce en vivo contra Materiales: si el stock actual no alcanza para lo que pide este documento, se marca "Insuficiente".</div>
+      <div id="doc-componentes-lista"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Panel: Cargar documento (admin/supervisor) ===== -->
+<div class="panel" id="panel-documentos-cargar">
+  <div class="panel-header">
+    <button class="icon-btn" onclick="volverADocumentos()">&#8592;</button>
+    <h2>Cargar documento</h2>
+  </div>
+  <div class="panel-body">
+    <div class="field"><label>Título / nombre clave</label><input id="doc-nuevo-titulo" placeholder="Ej. Procedimiento mantenimiento variador de frecuencia 8000h"/></div>
+    <div class="field">
+      <label>Categoría</label>
+      <select id="doc-nuevo-categoria">
+        <option value="MANUAL">Manual</option>
+        <option value="INSTRUCTIVO">Instructivo</option>
+        <option value="PROCEDIMIENTO">Procedimiento</option>
+        <option value="CHECKLIST">Check List</option>
+        <option value="OTRO">Otro</option>
+      </select>
+    </div>
+    <div class="field"><label>Tipo de equipo (opcional)</label><input id="doc-nuevo-tipo-equipo" placeholder="Ej. Variador de frecuencia" list="dl-tipos-equipo"/></div>
+    <div class="field"><label>Frecuencia de mantenimiento en horas (opcional)</label><input type="number" id="doc-nuevo-frecuencia" placeholder="Ej. 8000"/></div>
+    <div class="field"><label>Descripción / palabras clave</label><textarea id="doc-nuevo-descripcion"></textarea></div>
+
+    <div class="section-label">Archivo</div>
+    <div class="dropzone" id="doc-dropzone">
+      &#128193; Toca para elegir un archivo (PDF, Word, Excel, imagen...)
+      <input type="file" id="doc-input-archivo" style="display:none">
+    </div>
+    <div id="doc-archivo-elegido"></div>
+    <div class="hint-box">o, si todavía no lo has migrado desde Drive:</div>
+    <div class="field"><label>Enlace externo (Google Drive, etc.)</label><input id="doc-nuevo-enlace" placeholder="https://drive.google.com/..."/></div>
+
+    <div class="section-label">Componentes / repuestos relacionados (opcional)</div>
+    <div class="hint-box">&#128295; Si este documento aplica a un mantenimiento que requiere cambiar repuestos, agrégalos aquí para poder cruzar contra el stock disponible.</div>
+    <div class="search-row"><div class="search-box"><span class="search-icon">&#128269;</span><input id="doc-comp-buscar" placeholder="Buscar material por código o descripción..."/></div></div>
+    <div id="doc-comp-resultados"></div>
+    <div id="doc-comp-agregados"></div>
+
+    <button class="btn-primary" id="doc-btn-guardar" style="margin-top:16px">Guardar documento</button>
+  </div>
+</div>
+
 </div>
 </div>
 
@@ -968,6 +1091,7 @@ input,select,textarea{font-family:inherit;font-size:15px;}
 <datalist id="dl-modelos"></datalist>
 <datalist id="dl-ubicaciones"></datalist>
 <datalist id="dl-proveedores"></datalist>
+<datalist id="dl-tipos-equipo"></datalist>
 
 <div class="toast" id="toast"></div>
 
@@ -1024,7 +1148,7 @@ function aplicarModulo(modulo, irVistaDefault = true) {
   localStorage.setItem(MODULO_KEY, modulo);
 
   const navbar = document.getElementById("navbar-principal");
-  navbar.classList.remove("modulo-activos", "modulo-materiales");
+  navbar.classList.remove("modulo-activos", "modulo-materiales", "modulo-documental");
   navbar.classList.add("modulo-" + modulo);
   document.getElementById("selector-modulo").value = modulo;
 
@@ -1038,11 +1162,16 @@ function aplicarModulo(modulo, irVistaDefault = true) {
   if (modulo === "activos") {
     app.classList.remove("modulo-completo");
     document.querySelector('[data-tab="inicio"]').classList.add("active");
-  } else {
+  } else if (modulo === "materiales") {
     app.classList.add("modulo-completo");
     document.querySelector('[data-tab="materiales"]').classList.add("active");
     abrirPanel("panel-materiales");
     cargarMateriales();
+  } else if (modulo === "documental") {
+    app.classList.add("modulo-completo");
+    document.querySelector('[data-tab="documentos"]').classList.add("active");
+    abrirPanel("panel-documentos");
+    cargarDocumentos();
   }
 }
 
@@ -1932,6 +2061,12 @@ document.querySelectorAll(".nav-item").forEach(btn => {
     } else if (btn.dataset.tab === "carrito") {
       abrirPanel("panel-carrito");
       renderCarrito();
+    } else if (btn.dataset.tab === "documentos") {
+      abrirPanel("panel-documentos");
+      cargarDocumentos();
+    } else if (btn.dataset.tab === "documentos-cargar") {
+      abrirPanel("panel-documentos-cargar");
+      prepararFormularioDocumento();
     }
   };
 });
@@ -2538,6 +2673,322 @@ async function cargarSolpedHistorial() {
     cont.innerHTML = '<div class="empty">Error cargando historial: ' + e.message + '</div>';
   }
 }
+
+/* ============================================================
+   MODULO: GESTION DOCUMENTAL
+   ============================================================ */
+let documentosData = [];
+let filtroCategoriaDoc = "";
+let documentoActual = null;
+let componentesNuevoDoc = []; // [{codigo_sap, descripcion, cantidad_requerida}]
+let archivoSeleccionadoDoc = null;
+
+const LABEL_CATEGORIA_DOC = {
+  MANUAL: "Manual", INSTRUCTIVO: "Instructivo", PROCEDIMIENTO: "Procedimiento",
+  CHECKLIST: "Check List", OTRO: "Otro"
+};
+
+function volverADocumentos() {
+  abrirPanel("panel-documentos");
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  document.querySelector('[data-tab="documentos"]').classList.add("active");
+}
+
+async function cargarDocumentos() {
+  const lista = document.getElementById("lista-documentos");
+  lista.innerHTML = '<div class="loading">Cargando documentos...</div>';
+  try {
+    const { data, error } = await sb.from("documentos").select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    documentosData = data || [];
+
+    const dl = document.getElementById("dl-tipos-equipo");
+    const tiposUnicos = [...new Set(documentosData.map(d => d.tipo_equipo).filter(Boolean))].sort();
+    dl.innerHTML = tiposUnicos.map(t => `<option value="${t}">`).join("");
+
+    const puedeCargar = usuarioActual && (usuarioActual.rol === "admin" || usuarioActual.rol === "supervisor");
+    const tabCargar = document.querySelector('[data-tab="documentos-cargar"]');
+    if (tabCargar) tabCargar.style.display = puedeCargar ? "flex" : "none";
+
+    renderListaDocumentos();
+  } catch (e) {
+    lista.innerHTML = '<div class="empty">Error cargando documentos: ' + e.message + '</div>';
+  }
+}
+
+function renderListaDocumentos() {
+  const lista = document.getElementById("lista-documentos");
+  const texto = (document.getElementById("doc-buscar").value || "").toLowerCase().trim();
+
+  let filtrados = documentosData.filter(d => {
+    if (filtroCategoriaDoc && d.categoria !== filtroCategoriaDoc) return false;
+    if (texto) {
+      const campo = `${d.titulo} ${d.tipo_equipo || ""} ${d.descripcion || ""} ${d.tags || ""}`.toLowerCase();
+      if (!campo.includes(texto)) return false;
+    }
+    return true;
+  });
+
+  if (!filtrados.length) {
+    lista.innerHTML = '<div class="empty">No hay documentos que coincidan con el filtro actual.</div>';
+    return;
+  }
+
+  lista.innerHTML = filtrados.map((d, i) => `
+    <div class="mat-card" data-idx="${documentosData.indexOf(d)}">
+      <div class="mat-main">
+        <span class="doc-card-cat">${LABEL_CATEGORIA_DOC[d.categoria] || d.categoria}</span>
+        <div class="mat-desc">${d.titulo}</div>
+        <div class="mat-meta">${d.tipo_equipo ? d.tipo_equipo + (d.frecuencia_horas ? ' · ' + d.frecuencia_horas + 'h' : '') : ''}</div>
+      </div>
+    </div>
+  `).join("");
+
+  lista.querySelectorAll(".mat-card").forEach(card => {
+    card.onclick = () => abrirFichaDocumento(documentosData[parseInt(card.dataset.idx)]);
+  });
+}
+
+document.getElementById("doc-buscar").addEventListener("input", renderListaDocumentos);
+document.getElementById("doc-filtro-categoria").addEventListener("change", (e) => {
+  filtroCategoriaDoc = e.target.value;
+  renderListaDocumentos();
+});
+
+async function abrirFichaDocumento(doc) {
+  documentoActual = doc;
+  document.getElementById("doc-ficha-titulo").textContent = doc.titulo;
+
+  document.getElementById("doc-ficha-tabla").innerHTML = `
+    <tr><td>Categoría</td><td>${LABEL_CATEGORIA_DOC[doc.categoria] || doc.categoria}</td></tr>
+    <tr><td>Tipo de equipo</td><td>${doc.tipo_equipo || "—"}</td></tr>
+    <tr><td>Frecuencia de mantenimiento</td><td>${doc.frecuencia_horas ? doc.frecuencia_horas + " horas" : "—"}</td></tr>
+    <tr><td>Descripción</td><td>${doc.descripcion || "—"}</td></tr>
+    <tr><td>Origen del archivo</td><td>${doc.archivo_path ? "Subido a la plataforma" : "Enlace externo"}</td></tr>
+    <tr><td>Cargado por</td><td>${doc.creado_por || "—"}</td></tr>
+  `;
+
+  const puedeEliminar = usuarioActual && (usuarioActual.rol === "admin" || usuarioActual.rol === "supervisor");
+  document.getElementById("doc-btn-eliminar").style.display = puedeEliminar ? "flex" : "none";
+
+  abrirPanel("panel-documento-ficha");
+  await cargarComponentesFicha(doc.id);
+}
+
+async function cargarComponentesFicha(documentoId) {
+  const seccion = document.getElementById("doc-componentes-seccion");
+  const cont = document.getElementById("doc-componentes-lista");
+  try {
+    const { data, error } = await sb.from("v_documento_stock").select("*").eq("documento_id", documentoId);
+    if (error) throw error;
+    if (!data || !data.length) {
+      seccion.style.display = "none";
+      return;
+    }
+    seccion.style.display = "block";
+    cont.innerHTML = data.map(c => `
+      <div class="doc-componente-row">
+        <div class="doc-componente-main">
+          <div class="doc-componente-desc">${c.material_descripcion}</div>
+          <div class="doc-componente-meta">${c.codigo_sap} · necesita ${c.cantidad_requerida} · stock total ${c.stock_actual_todos_centros}</div>
+        </div>
+        <span class="badge badge-${c.estado_disponibilidad}">${c.estado_disponibilidad}</span>
+      </div>
+    `).join("");
+  } catch (e) {
+    seccion.style.display = "block";
+    cont.innerHTML = '<div class="empty">Error cargando componentes: ' + e.message + '</div>';
+  }
+}
+
+document.getElementById("doc-btn-descargar").onclick = async () => {
+  if (!documentoActual) return;
+  try {
+    if (documentoActual.archivo_path) {
+      const { data, error } = await sb.storage.from("documentos").createSignedUrl(documentoActual.archivo_path, 300);
+      if (error) throw error;
+      window.open(data.signedUrl, "_blank");
+    } else if (documentoActual.enlace_externo) {
+      window.open(documentoActual.enlace_externo, "_blank");
+    } else {
+      toast("Este documento no tiene archivo ni enlace asociado");
+    }
+  } catch (e) {
+    toast("Error abriendo el archivo: " + e.message);
+  }
+};
+
+document.getElementById("doc-btn-eliminar").onclick = async () => {
+  if (!documentoActual) return;
+  if (!confirm("¿Eliminar este documento? Esta acción no se puede deshacer.")) return;
+  try {
+    if (documentoActual.archivo_path) {
+      await sb.storage.from("documentos").remove([documentoActual.archivo_path]);
+    }
+    const { error } = await sb.from("documentos").delete().eq("id", documentoActual.id);
+    if (error) throw error;
+    toast("Documento eliminado");
+    volverADocumentos();
+    cargarDocumentos();
+  } catch (e) {
+    toast("Error eliminando: " + e.message);
+  }
+};
+
+/* ---------- Formulario: Cargar documento ---------- */
+function prepararFormularioDocumento() {
+  document.getElementById("doc-nuevo-titulo").value = "";
+  document.getElementById("doc-nuevo-categoria").value = "MANUAL";
+  document.getElementById("doc-nuevo-tipo-equipo").value = "";
+  document.getElementById("doc-nuevo-frecuencia").value = "";
+  document.getElementById("doc-nuevo-descripcion").value = "";
+  document.getElementById("doc-nuevo-enlace").value = "";
+  document.getElementById("doc-comp-buscar").value = "";
+  document.getElementById("doc-comp-resultados").innerHTML = "";
+  archivoSeleccionadoDoc = null;
+  componentesNuevoDoc = [];
+  renderArchivoElegido();
+  renderComponentesAgregados();
+}
+
+document.getElementById("doc-dropzone").addEventListener("click", () => {
+  document.getElementById("doc-input-archivo").click();
+});
+document.getElementById("doc-input-archivo").addEventListener("change", (e) => {
+  archivoSeleccionadoDoc = e.target.files[0] || null;
+  renderArchivoElegido();
+});
+
+function renderArchivoElegido() {
+  const cont = document.getElementById("doc-archivo-elegido");
+  if (!archivoSeleccionadoDoc) { cont.innerHTML = ""; return; }
+  const kb = Math.round(archivoSeleccionadoDoc.size / 1024);
+  cont.innerHTML = `
+    <div class="archivo-elegido">
+      <span>&#128196; ${archivoSeleccionadoDoc.name} (${kb} KB)</span>
+      <button class="carrito-remove" id="doc-quitar-archivo">&#10005;</button>
+    </div>`;
+  document.getElementById("doc-quitar-archivo").onclick = () => {
+    archivoSeleccionadoDoc = null;
+    document.getElementById("doc-input-archivo").value = "";
+    renderArchivoElegido();
+  };
+}
+
+let docCompBuscarTimeout = null;
+document.getElementById("doc-comp-buscar").addEventListener("input", (e) => {
+  clearTimeout(docCompBuscarTimeout);
+  const texto = e.target.value.trim();
+  if (texto.length < 2) { document.getElementById("doc-comp-resultados").innerHTML = ""; return; }
+  docCompBuscarTimeout = setTimeout(() => buscarMaterialesParaDocumento(texto), 350);
+});
+
+async function buscarMaterialesParaDocumento(texto) {
+  const cont = document.getElementById("doc-comp-resultados");
+  cont.innerHTML = '<div class="loading">Buscando...</div>';
+  try {
+    const { data, error } = await sb.from("materiales").select("codigo_sap,descripcion")
+      .or(`codigo_sap.ilike.%${texto}%,descripcion.ilike.%${texto}%`).limit(15);
+    if (error) throw error;
+    if (!data || !data.length) { cont.innerHTML = '<div class="empty">Sin resultados.</div>'; return; }
+    cont.innerHTML = data.map((m, i) => `
+      <div class="mat-card" data-idx="${i}">
+        <div class="mat-main">
+          <div class="mat-code">${m.codigo_sap}</div>
+          <div class="mat-desc">${m.descripcion}</div>
+        </div>
+      </div>
+    `).join("");
+    cont.querySelectorAll(".mat-card").forEach((card, i) => {
+      card.onclick = () => {
+        const m = data[i];
+        if (!componentesNuevoDoc.find(c => c.codigo_sap === m.codigo_sap)) {
+          componentesNuevoDoc.push({ codigo_sap: m.codigo_sap, descripcion: m.descripcion, cantidad_requerida: 1 });
+          renderComponentesAgregados();
+        }
+        document.getElementById("doc-comp-buscar").value = "";
+        cont.innerHTML = "";
+      };
+    });
+  } catch (e) {
+    cont.innerHTML = '<div class="empty">Error buscando: ' + e.message + '</div>';
+  }
+}
+
+function renderComponentesAgregados() {
+  const cont = document.getElementById("doc-comp-agregados");
+  if (!componentesNuevoDoc.length) { cont.innerHTML = ""; return; }
+  cont.innerHTML = componentesNuevoDoc.map((c, idx) => `
+    <div class="carrito-row">
+      <div class="carrito-row-main">
+        <div class="carrito-row-desc">${c.descripcion}</div>
+        <div class="carrito-row-meta">${c.codigo_sap}</div>
+      </div>
+      <input type="number" min="1" class="carrito-qty" data-idx="${idx}" value="${c.cantidad_requerida}"/>
+      <button class="carrito-remove" data-idx="${idx}">&#10005;</button>
+    </div>
+  `).join("");
+  cont.querySelectorAll(".carrito-qty").forEach(inp => {
+    inp.onchange = () => { componentesNuevoDoc[parseInt(inp.dataset.idx)].cantidad_requerida = parseFloat(inp.value) || 1; };
+  });
+  cont.querySelectorAll(".carrito-remove").forEach(btn => {
+    btn.onclick = () => { componentesNuevoDoc.splice(parseInt(btn.dataset.idx), 1); renderComponentesAgregados(); };
+  });
+}
+
+document.getElementById("doc-btn-guardar").onclick = async () => {
+  const titulo = document.getElementById("doc-nuevo-titulo").value.trim();
+  const enlace = document.getElementById("doc-nuevo-enlace").value.trim();
+
+  if (!titulo) { toast("El título es obligatorio"); return; }
+  if (!archivoSeleccionadoDoc && !enlace) { toast("Sube un archivo o pega un enlace externo"); return; }
+
+  const btn = document.getElementById("doc-btn-guardar");
+  btn.disabled = true; btn.textContent = "Guardando...";
+  try {
+    let archivoPath = null;
+    let archivoNombre = null;
+
+    if (archivoSeleccionadoDoc) {
+      const nombreSeguro = archivoSeleccionadoDoc.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      archivoPath = `${crypto.randomUUID()}-${nombreSeguro}`;
+      archivoNombre = archivoSeleccionadoDoc.name;
+      const { error: errSubida } = await sb.storage.from("documentos").upload(archivoPath, archivoSeleccionadoDoc);
+      if (errSubida) throw errSubida;
+    }
+
+    const { data: docInsertado, error: errDoc } = await sb.from("documentos").insert({
+      titulo,
+      categoria: document.getElementById("doc-nuevo-categoria").value,
+      tipo_equipo: document.getElementById("doc-nuevo-tipo-equipo").value || null,
+      frecuencia_horas: parseInt(document.getElementById("doc-nuevo-frecuencia").value) || null,
+      descripcion: document.getElementById("doc-nuevo-descripcion").value || null,
+      archivo_path: archivoPath,
+      archivo_nombre: archivoNombre,
+      enlace_externo: enlace || null,
+      creado_por: (usuarioActual && usuarioActual.nombre) || null
+    }).select().single();
+    if (errDoc) throw errDoc;
+
+    if (componentesNuevoDoc.length) {
+      const filas = componentesNuevoDoc.map(c => ({
+        documento_id: docInsertado.id,
+        codigo_sap: c.codigo_sap,
+        cantidad_requerida: c.cantidad_requerida
+      }));
+      const { error: errComp } = await sb.from("documento_componentes").insert(filas);
+      if (errComp) throw errComp;
+    }
+
+    toast("Documento guardado");
+    volverADocumentos();
+    cargarDocumentos();
+  } catch (e) {
+    toast("Error guardando documento: " + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = "Guardar documento";
+  }
+};
 
 /* ============================================================
    AUTENTICACION REAL (Supabase Auth) + ROLES

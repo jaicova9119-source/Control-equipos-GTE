@@ -12,7 +12,7 @@
  * cargue sin señal.
  */
 
-const CACHE_NAME = "equipos-gte-v12";
+const CACHE_NAME = "equipos-gte-v14";
 
 const ARCHIVOS_A_GUARDAR = [
   "./",
