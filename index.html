@@ -1040,8 +1040,9 @@ input,select,textarea{font-family:inherit;font-size:15px;}
     <table class="kv-table" id="doc-ficha-tabla"></table>
 
     <div style="display:flex;gap:8px;margin:16px 0">
-      <button class="btn-primary" id="doc-btn-descargar" style="flex:1">&#128190; Descargar / Ver</button>
-      <button class="btn-secondary" id="doc-btn-eliminar" style="display:none">&#128465;</button>
+      <button class="btn-primary" id="doc-btn-descargar" style="flex:1;width:auto">&#128190; Descargar / Ver</button>
+      <button class="btn-secondary" id="doc-btn-editar" style="display:none;width:auto;flex-shrink:0;margin-top:0;padding:0 16px">&#9998; Editar</button>
+      <button class="btn-secondary" id="doc-btn-eliminar" style="display:none;width:44px;flex-shrink:0;margin-top:0;padding:0">&#128465;</button>
     </div>
 
     <div id="doc-componentes-seccion" style="display:none">
@@ -1056,7 +1057,7 @@ input,select,textarea{font-family:inherit;font-size:15px;}
 <div class="panel" id="panel-documentos-cargar">
   <div class="panel-header">
     <button class="icon-btn" onclick="volverADocumentos()">&#8592;</button>
-    <h2>Cargar documento</h2>
+    <h2 id="doc-cargar-titulo">Cargar documento</h2>
   </div>
   <div class="panel-body">
     <div class="field"><label>Título / nombre clave</label><input id="doc-nuevo-titulo" placeholder="Ej. Procedimiento mantenimiento variador de frecuencia 8000h"/></div>
@@ -1075,6 +1076,7 @@ input,select,textarea{font-family:inherit;font-size:15px;}
     <div class="field"><label>Descripción / palabras clave</label><textarea id="doc-nuevo-descripcion"></textarea></div>
 
     <div class="section-label">Archivo</div>
+    <div id="doc-archivo-actual"></div>
     <div class="dropzone" id="doc-dropzone">
       &#128193; Toca para elegir un archivo (PDF, Word, Excel, imagen...)
       <input type="file" id="doc-input-archivo" style="display:none">
@@ -2815,6 +2817,7 @@ async function abrirFichaDocumento(doc) {
 
   const puedeEliminar = usuarioActual && (usuarioActual.rol === "admin" || usuarioActual.rol === "supervisor");
   document.getElementById("doc-btn-eliminar").style.display = puedeEliminar ? "flex" : "none";
+  document.getElementById("doc-btn-editar").style.display = puedeEliminar ? "flex" : "none";
 
   abrirPanel("panel-documento-ficha");
   await cargarComponentesFicha(doc.id);
@@ -2880,21 +2883,62 @@ document.getElementById("doc-btn-eliminar").onclick = async () => {
   }
 };
 
-/* ---------- Formulario: Cargar documento ---------- */
-function prepararFormularioDocumento() {
-  document.getElementById("doc-nuevo-titulo").value = "";
-  document.getElementById("doc-nuevo-categoria").value = "MANUAL";
-  document.getElementById("doc-nuevo-tipo-equipo").value = "";
-  document.getElementById("doc-nuevo-frecuencia").value = "";
-  document.getElementById("doc-nuevo-descripcion").value = "";
-  document.getElementById("doc-nuevo-enlace").value = "";
+/* ---------- Formulario: Cargar / Editar documento ---------- */
+let documentoEditandoId = null;
+
+async function prepararFormularioDocumento(doc = null) {
+  documentoEditandoId = doc ? doc.id : null;
+  document.getElementById("doc-cargar-titulo").textContent = doc ? "Editar documento" : "Cargar documento";
+  document.getElementById("doc-btn-guardar").textContent = doc ? "Guardar cambios" : "Guardar documento";
+
+  document.getElementById("doc-nuevo-titulo").value = doc ? doc.titulo : "";
+  document.getElementById("doc-nuevo-categoria").value = doc ? doc.categoria : "MANUAL";
+  document.getElementById("doc-nuevo-tipo-equipo").value = doc ? (doc.tipo_equipo || "") : "";
+  document.getElementById("doc-nuevo-frecuencia").value = doc ? (doc.frecuencia_horas || "") : "";
+  document.getElementById("doc-nuevo-descripcion").value = doc ? (doc.descripcion || "") : "";
+  document.getElementById("doc-nuevo-enlace").value = doc ? (doc.enlace_externo || "") : "";
   document.getElementById("doc-comp-buscar").value = "";
   document.getElementById("doc-comp-resultados").innerHTML = "";
   archivoSeleccionadoDoc = null;
-  componentesNuevoDoc = [];
+  document.getElementById("doc-input-archivo").value = "";
+
+  const contActual = document.getElementById("doc-archivo-actual");
+  if (doc && doc.archivo_path) {
+    contActual.innerHTML = `<div class="hint-box">&#128196; Archivo actual: <b>${doc.archivo_nombre || "archivo subido"}</b> — si eliges uno nuevo abajo, lo reemplaza.</div>`;
+  } else {
+    contActual.innerHTML = "";
+  }
+
+  if (doc) {
+    try {
+      const { data, error } = await sb.from("documento_componentes")
+        .select("codigo_sap, cantidad_requerida, materiales(descripcion)").eq("documento_id", doc.id);
+      if (error) throw error;
+      componentesNuevoDoc = (data || []).map(c => ({
+        codigo_sap: c.codigo_sap,
+        descripcion: c.materiales ? c.materiales.descripcion : c.codigo_sap,
+        cantidad_requerida: c.cantidad_requerida
+      }));
+    } catch (e) {
+      toast("No se pudieron cargar los componentes existentes: " + e.message);
+      componentesNuevoDoc = [];
+    }
+  } else {
+    componentesNuevoDoc = [];
+  }
+
   renderArchivoElegido();
   renderComponentesAgregados();
 }
+
+function editarDocumentoActual() {
+  if (!documentoActual) return;
+  abrirPanel("panel-documentos-cargar");
+  document.querySelectorAll(".nav-item").forEach(b => b.classList.remove("active"));
+  document.querySelector('[data-tab="documentos-cargar"]').classList.add("active");
+  prepararFormularioDocumento(documentoActual);
+}
+document.getElementById("doc-btn-editar").onclick = editarDocumentoActual;
 
 document.getElementById("doc-dropzone").addEventListener("click", () => {
   document.getElementById("doc-input-archivo").click();
@@ -2984,25 +3028,39 @@ function renderComponentesAgregados() {
 document.getElementById("doc-btn-guardar").onclick = async () => {
   const titulo = document.getElementById("doc-nuevo-titulo").value.trim();
   const enlace = document.getElementById("doc-nuevo-enlace").value.trim();
+  const editando = documentoEditandoId !== null;
+  const docPrevio = editando ? documentosData.find(d => d.id === documentoEditandoId) : null;
 
   if (!titulo) { toast("El título es obligatorio"); return; }
-  if (!archivoSeleccionadoDoc && !enlace) { toast("Sube un archivo o pega un enlace externo"); return; }
+  const tendraArchivo = archivoSeleccionadoDoc || enlace || (docPrevio && docPrevio.archivo_path && !archivoSeleccionadoDoc);
+  if (!tendraArchivo) { toast("Sube un archivo o pega un enlace externo"); return; }
 
   const btn = document.getElementById("doc-btn-guardar");
   btn.disabled = true; btn.textContent = "Guardando...";
   try {
-    let archivoPath = null;
-    let archivoNombre = null;
+    // Por defecto, se conserva el archivo/enlace que ya tenia (si se esta editando)
+    let archivoPath = docPrevio ? docPrevio.archivo_path : null;
+    let archivoNombre = docPrevio ? docPrevio.archivo_nombre : null;
 
     if (archivoSeleccionadoDoc) {
+      // Se eligio un archivo nuevo: subirlo, y borrar el anterior si habia uno en Storage
       const nombreSeguro = archivoSeleccionadoDoc.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      archivoPath = `${crypto.randomUUID()}-${nombreSeguro}`;
-      archivoNombre = archivoSeleccionadoDoc.name;
-      const { error: errSubida } = await sb.storage.from("documentos").upload(archivoPath, archivoSeleccionadoDoc);
+      const nuevoPath = `${crypto.randomUUID()}-${nombreSeguro}`;
+      const { error: errSubida } = await sb.storage.from("documentos").upload(nuevoPath, archivoSeleccionadoDoc);
       if (errSubida) throw errSubida;
+      if (docPrevio && docPrevio.archivo_path) {
+        await sb.storage.from("documentos").remove([docPrevio.archivo_path]);
+      }
+      archivoPath = nuevoPath;
+      archivoNombre = archivoSeleccionadoDoc.name;
+    } else if (enlace && docPrevio && docPrevio.archivo_path && enlace !== docPrevio.enlace_externo) {
+      // Se paso a usar un enlace externo en vez del archivo que tenia subido
+      await sb.storage.from("documentos").remove([docPrevio.archivo_path]);
+      archivoPath = null;
+      archivoNombre = null;
     }
 
-    const { data: docInsertado, error: errDoc } = await sb.from("documentos").insert({
+    const payload = {
       titulo,
       categoria: document.getElementById("doc-nuevo-categoria").value,
       tipo_equipo: document.getElementById("doc-nuevo-tipo-equipo").value || null,
@@ -3011,13 +3069,28 @@ document.getElementById("doc-btn-guardar").onclick = async () => {
       archivo_path: archivoPath,
       archivo_nombre: archivoNombre,
       enlace_externo: enlace || null,
-      creado_por: (usuarioActual && usuarioActual.nombre) || null
-    }).select().single();
-    if (errDoc) throw errDoc;
+      updated_at: new Date().toISOString()
+    };
+
+    let documentoId;
+    if (editando) {
+      const { error: errUpd } = await sb.from("documentos").update(payload).eq("id", documentoEditandoId);
+      if (errUpd) throw errUpd;
+      documentoId = documentoEditandoId;
+
+      // Reemplazar por completo los componentes (mas simple y seguro que calcular el diff)
+      const { error: errDelComp } = await sb.from("documento_componentes").delete().eq("documento_id", documentoId);
+      if (errDelComp) throw errDelComp;
+    } else {
+      payload.creado_por = (usuarioActual && usuarioActual.nombre) || null;
+      const { data: docInsertado, error: errDoc } = await sb.from("documentos").insert(payload).select().single();
+      if (errDoc) throw errDoc;
+      documentoId = docInsertado.id;
+    }
 
     if (componentesNuevoDoc.length) {
       const filas = componentesNuevoDoc.map(c => ({
-        documento_id: docInsertado.id,
+        documento_id: documentoId,
         codigo_sap: c.codigo_sap,
         cantidad_requerida: c.cantidad_requerida
       }));
@@ -3025,13 +3098,13 @@ document.getElementById("doc-btn-guardar").onclick = async () => {
       if (errComp) throw errComp;
     }
 
-    toast("Documento guardado");
+    toast(editando ? "Documento actualizado" : "Documento guardado");
     volverADocumentos();
     cargarDocumentos();
   } catch (e) {
     toast("Error guardando documento: " + e.message);
   } finally {
-    btn.disabled = false; btn.textContent = "Guardar documento";
+    btn.disabled = false; btn.textContent = editando ? "Guardar cambios" : "Guardar documento";
   }
 };
 
